@@ -45,13 +45,13 @@ module.exports = function (React) {
     scrollListener: function () {
       var el = this.getDOMNode();
       var scrollBegin = null;
-      var scrollLengt = null;
+      var scrollLength = null;
       if (this.isVertical()) {
         scrollBegin = el.parentNode.scrollTop;
-        scrollLength = el.parentNode.clientHeight;
+        scrollLength = el.clientHeight - el.parentNode.clientHeight; // less the view window's length.
       } else {
         scrollBegin = el.parentNode.scrollLeft;
-        scrollLength = el.parentNode.clientWidth;
+        scrollLength = el.clientWidth - el.parentNode.clientWidth;
       }
       if (scrollLength - scrollBegin < Number(this.props.threshold)) {
         this.detachScrollListener();
@@ -67,10 +67,12 @@ module.exports = function (React) {
       var domNode = this.getDOMNode();
       var parentNode = domNode.parentNode;
       parentNode.addEventListener('scroll', this.scrollListener);
-      parentNode.addEventListener('resize', this.scrollListener);
+      window.addEventListener('resize', this.scrollListener);
     },
     detachScrollListener: function () {
-      window.removeEventListener('scroll', this.scrollListener);
+      var domNode = this.getDOMNode();
+      var parentNode = domNode.parentNode;
+      parentNode.removeEventListener('scroll', this.scrollListener);
       window.removeEventListener('resize', this.scrollListener);
     },
     componentWillUnmount: function () {

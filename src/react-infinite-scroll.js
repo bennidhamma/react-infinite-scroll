@@ -1,17 +1,3 @@
-function topPosition(domElt) {
-  if (!domElt) {
-    return 0;
-  }
-  return domElt.offsetTop + topPosition(domElt.offsetParent);
-}
-
-function leftPosition(domElt) {
-  if (!domElt) {
-    return 0;
-  }
-  return domElt.offsetLeft + leftPosition(domElt.offsetParent);
-}
-
 module.exports = function (React) {
   if (React.addons && React.addons.InfiniteScroll) {
     return React.addons.InfiniteScroll;
@@ -29,22 +15,38 @@ module.exports = function (React) {
     componentDidMount: function () {
       this.pageLoaded = this.props.pageStart;
       this.attachScrollListener();
+      this.updateOuterLength();
     },
     componentDidUpdate: function () {
       this.attachScrollListener();
+      this.updateOuterLength();
+    },
+    updateOuterLength: function () {
+      var innerLength = this.props.innerLength;
+      if (!innerLength) {
+        return;
+      }
+      var el = this.getDOMNode();
+      var length = innerLength * React.Children.count(this.props.children) + 'px';
+      if (this.isVertical()) {
+        el.style.height = length;
+      } else {
+        el.style.width = length;
+      }
+    },
+    isVertical: function() {
+      return this.props.vertical !== undefined ? this.props.vertical : true;
     },
     render: function () {
       var props = this.props;
       var component = props.component || React.DOM.div;
-
       return component(props, props.children, props.hasMore && (props.loader || InfiniteScroll._defaultLoader));
     },
     scrollListener: function () {
       var el = this.getDOMNode();
-      var vertical = this.props.vertical !== undefined ? this.props.vertical : true;
       var scrollBegin = null;
       var scrollLengt = null;
-      if (vertical) {
+      if (this.isVertical()) {
         scrollBegin = el.parentNode.scrollTop;
         scrollLength = el.parentNode.clientHeight;
       } else {
@@ -66,7 +68,6 @@ module.exports = function (React) {
       var parentNode = domNode.parentNode;
       parentNode.addEventListener('scroll', this.scrollListener);
       parentNode.addEventListener('resize', this.scrollListener);
-      this.scrollListener();
     },
     detachScrollListener: function () {
       window.removeEventListener('scroll', this.scrollListener);

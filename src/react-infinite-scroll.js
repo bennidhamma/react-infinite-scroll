@@ -43,27 +43,29 @@ module.exports = function (React) {
       var el = this.getDOMNode();
       var vertical = this.props.vertical !== undefined ? this.props.vertical : true;
       var scrollBegin = null;
-      var posFn = null;
+      var scrollLengt = null;
       if (vertical) {
-        scrollBegin = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
-        posFn = topPosition;
+        scrollBegin = el.parentNode.scrollTop;
+        scrollLength = el.parentNode.clientHeight;
       } else {
-        scrollBegin = (window.pageXOffset !== undefined) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-        posFn = leftPosition;
+        scrollBegin = el.parentNode.scrollLeft;
+        scrollLength = el.parentNode.clientWidth;
       }
-      if (posFn(el) + el.offsetHeight - scrollBegin - window.innerHeight < Number(this.props.threshold)) {
+      if (scrollLength - scrollBegin < Number(this.props.threshold)) {
         this.detachScrollListener();
         // call loadMore after detachScrollListener to allow
         // for non-async loadMore functions
-        this.props.loadMore(this.pageLoaded += 1);
+        this.props.loadMore(++this.pageLoaded);
       }
     },
     attachScrollListener: function () {
       if (!this.props.hasMore) {
         return;
       }
-      window.addEventListener('scroll', this.scrollListener);
-      window.addEventListener('resize', this.scrollListener);
+      var domNode = this.getDOMNode();
+      var parentNode = domNode.parentNode;
+      parentNode.addEventListener('scroll', this.scrollListener);
+      parentNode.addEventListener('resize', this.scrollListener);
       this.scrollListener();
     },
     detachScrollListener: function () {

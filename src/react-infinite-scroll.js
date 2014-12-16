@@ -5,6 +5,13 @@ function topPosition(domElt) {
   return domElt.offsetTop + topPosition(domElt.offsetParent);
 }
 
+function leftPosition(domElt) {
+  if (!domElt) {
+    return 0;
+  }
+  return domElt.offsetLeft + leftPosition(domElt.offsetParent);
+}
+
 module.exports = function (React) {
   if (React.addons && React.addons.InfiniteScroll) {
     return React.addons.InfiniteScroll;
@@ -28,12 +35,23 @@ module.exports = function (React) {
     },
     render: function () {
       var props = this.props;
-      return React.DOM.div(null, props.children, props.hasMore && (props.loader || InfiniteScroll._defaultLoader));
+      var component = props.component || React.DOM.div;
+
+      return component(props, props.children, props.hasMore && (props.loader || InfiniteScroll._defaultLoader));
     },
     scrollListener: function () {
       var el = this.getDOMNode();
-      var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
-      if (topPosition(el) + el.offsetHeight - scrollTop - window.innerHeight < Number(this.props.threshold)) {
+      var vertical = this.props.vertical || true;
+      var scrollBegin = null;
+      var posFn = null;
+      if (vertical) {
+        scrollBegin = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        posFn = topPosition;
+      } else {
+        scrollBegin = (window.pageXOffset !== undefined) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        posFn = leftPosition;
+      }
+      if (posFn(el) + el.offsetHeight - scrollBegin - window.innerHeight < Number(this.props.threshold)) {
         this.detachScrollListener();
         // call loadMore after detachScrollListener to allow
         // for non-async loadMore functions

@@ -41,7 +41,7 @@ module.exports = function (React) {
     },
     scrollListener: function () {
       var el = this.getDOMNode();
-      var vertical = this.props.vertical || true;
+      var vertical = this.props.vertical !== undefined ? this.props.vertical : true;
       var scrollBegin = null;
       var posFn = null;
       if (vertical) {
